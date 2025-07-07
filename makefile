@@ -1,33 +1,34 @@
 # Compilador e flags
 CC = gcc
-CFLAGS = -Wall -g -std=c11 
-
-# Arquivos fonte e arquivos objeto
-SRC = main.c bd_paciente.c
-OBJ = $(SRC:.c=.o)
+CFLAGS = -Wall -g -std=c11
 
 # Nome do executável
 EXEC = healthsys
 
+# Arquivos fonte e objeto
+SRC = main.c bdpaciente.c
+OBJ = $(SRC:.c=.o)
+
+# Alvo padrão: construir o executável
 all: $(EXEC)
 
-# Regra para linkar (vincular) o executável a partir dos arquivos objeto
+# Regra para linkar (vincular) o executável
 $(EXEC): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -o $(EXEC) $(LDFLAGS)
+	$(CC) $(CFLAGS) $(OBJ) -o $(EXEC)
 
-# Regras para compilar arquivos .c em arquivos objeto (.o)
-main.o: main.c bd_paciente.h
-	$(CC) $(CFLAGS) -c main.c -o main.o
+# Regras explícitas para compilar cada arquivo .c em .o
+main.o: main.c bdpaciente.h paciente.h
+	$(CC) $(CFLAGS) -c main.c
 
-bd_paciente.o: bd_paciente.c bd_paciente.h
-	$(CC) $(CFLAGS) -c bd_paciente.c -o bd_paciente.o
+bdpaciente.o: bdpaciente.c bdpaciente.h paciente.h
+	$(CC) $(CFLAGS) -c bdpaciente.c
 
-# Alvo para limpar os arquivos gerados pela compilação (arquivos objeto e o executável)
+# Alvo para limpar os arquivos gerados
 clean:
 	rm -f $(OBJ) $(EXEC)
 
-# Alvo para executar o programa (opcional)
-run: $(EXEC)
+# Alvo para executar
+run: all
 	./$(EXEC)
 
 .PHONY: all clean run

@@ -1,86 +1,64 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
-#include "bd_paciente.h"
+#include <string.h>
+#include "bdpaciente.h"
 
-// Função que limpa o buffer de entrada do teclado
-static void limpar_buffer_entrada_main() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
-
-// Função que exibe o menu principal do sistema para o usuário
 void exibir_menu() {
-    printf("\nHealthSys - Gerenciamento de Pacientes (Parte I)\n");
+    printf("\n--- HealthSys ---\n");
     printf("1 - Consultar paciente\n");
-    // Opções 2, 3, 4 (Atualizar, Remover, Inserir) são para próximas partes do trabalho
+    printf("2 - Atualizar paciente\n");
+    printf("3 - Remover paciente\n");
+    printf("4 - Inserir paciente\n");
     printf("5 - Imprimir lista de pacientes\n");
-    printf("Escolha uma opção: ");
+    printf("Q - Sair e Salvar\n");
+    printf("> ");
 }
 
-// Função principal do programa
 int main() {
-    // Tenta criar (alocar e inicializar) a estrutura do banco de dados de pacientes, verificando se foi bem sucedida
     BDPaciente* bd = criar_bdpaciente();
     if (bd == NULL) {
-        fprintf(stderr, "Erro crítico: Falha ao alocar memória para o banco de dados.\n");
-        return EXIT_FAILURE; // Termina o programa com código de erro se falhar
+        fprintf(stderr, "Erro critico: Falha ao alocar memoria.\n");
+        return EXIT_FAILURE;
     }
 
-    // Tenta carregar os dados dos pacientes do arquivo "bd_paciente.csv" ao iniciar o sistema
-    if (carregar_bd_do_csv(bd, "bd_paciente.csv") != 0) {
-        // Se carregar_bd_do_csv retornar um valor diferente de 0, exibe a mensagem abaixo
-        fprintf(stderr, "Aviso: Não foi possível carregar todos os dados de 'bd_paciente.csv'.\n");
-    }
+    carregar_bd_do_csv(bd, "bd_paciente.csv");
 
     char opcao_str[10];
     char opcao_char;
 
-    // Loop principal do menu do sistema
     while (1) {
-        exibir_menu(); // Mostra as opções do menu
-        if (fgets(opcao_str, sizeof(opcao_str), stdin) == NULL) {
-            // Se fgets retornar NULL, ocorreu um erro de leitura ou fim de arquivo (EOF)
-            printf("Erro ao ler opção ou fim de entrada.\n");
-            break;
+        exibir_menu();
+        if (fgets(opcao_str, sizeof(opcao_str), stdin) == NULL) break;
+        
+        if (strlen(opcao_str) > 0) {
+            opcao_str[strcspn(opcao_str, "\n")] = 0;
         }
 
-        if (strlen(opcao_str) > 0 && opcao_str[strlen(opcao_str) - 1] == '\n') {
-            opcao_str[strlen(opcao_str) - 1] = '\0';
-        } else {
-            // Se a string não termina com '\n' e seu tamanho é o máximo do buffer menos 1, significa que a entrada do usuário foi maior que o buffer, nesse caso, é preciso limpar o restante do buffer de entrada
-            if (strlen(opcao_str) == sizeof(opcao_str) - 1) {
-                 limpar_buffer_entrada_main();
-            }
-        }
-
-        // Verifica se o usuário digitou exatamente um caractere para a opção (em que ponto chegamos...)
         if (strlen(opcao_str) == 1) {
-            opcao_char = toupper(opcao_str[0]); // Converte a opção para maiúscula para tratar 'q' e 'Q' da mesma forma, uma vez que o C é uma linguagem case sensitive
-
-            switch (opcao_char) {
-                case '1':
-                    consultar_paciente(bd); // Chama a função do TAD para consultar pacientes
-                    break;
-                case '5':
-                    imprimir_lista_pacientes(bd); // Chama a função do TAD para imprimir a lista
-                    break;
-                case 'Q':
-                    printf("Desligando...\n");
-                    liberar_bdpaciente(bd); // Libera a memória
-                    return EXIT_SUCCESS;
-                default: // Caso o jumento do usuário digite uma opção inválida
-                    printf("Opção inválida. Tente novamente.\n");
-                    break;
-            }
+             opcao_char = toupper(opcao_str[0]);
         } else {
-             // Se o asno digitou mais de um caractere ou nenhum
-             printf("Opção inválida. Por favor, digite apenas '1', '5' ou 'Q' :)\n");
+             opcao_char = ' ';
+        }
+
+        switch (opcao_char) {
+            case '1': consultar_paciente(bd); break;
+            case '2': atualizar_paciente(bd); break;
+            case '3': remover_paciente(bd); break;
+            case '4': inserir_paciente(bd); break;
+            case '5': imprimir_lista_pacientes(bd); break;
+            case 'Q':
+                printf("Salvando dados no arquivo bd_paciente.csv...\n");
+                salvar_bd_para_csv(bd, "bd_paciente.csv");
+                printf("Saindo do sistema.\n");
+                liberar_bdpaciente(bd);
+                return EXIT_SUCCESS;
+            default:
+                printf("Opcao invalida. Tente novamente.\n");
+                break;
         }
     }
 
-    // Libera a memória do banco de dados caso o loop principal seja interrompido por um 'break' (o que só tem chance de ocorrer uma vez nesse programa - por enquanto)
     liberar_bdpaciente(bd);
-    return EXIT_SUCCESS; // Só correr pro abraço
+    return EXIT_SUCCESS;
 }
