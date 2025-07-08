@@ -5,7 +5,7 @@
 
 A execução deste trabalho consiste na implementação bem-sucedida, e com o mínimo de falhas de segmentação, do sistema completo de gerenciamento de dados de pacientes. Se na Parte I estávamos passeando no parque com um vetor estático, a Parte II nos convidou para escalar o Monte Everest da alocação dinâmica com uma *lista encadeada*.
 
-[cite_start]Este sistema, agora em sua forma final e gloriosa, implementa o temido, porém necessário, *CRUD (Create, Read, Update, Delete)*. [cite: 2] Os dados são bravamente carregados de um arquivo bd_paciente.csv e, após uma sessão de árduo trabalho do usuário, são salvos de volta, garantindo que todo o esforço não seja perdido no abismo do void.
+Este sistema, agora em sua forma final e gloriosa, implementa o temido, porém necessário, *CRUD (Create, Read, Update, Delete)*. Os dados são bravamente carregados de um arquivo bd_paciente.csv e, após uma sessão de árduo trabalho do usuário, são salvos de volta, garantindo que todo o esforço não seja perdido no abismo do void.
 
 *Disciplina:* Estrutura de Dados (A arte de organizar o caos)
 
@@ -50,7 +50,7 @@ A execução deste trabalho consiste na implementação bem-sucedida, e com o m�
 ## Principais TADs e Decisões de Implementação (As Escolhas Difíceis)
 
 ### 1. Estrutura de Dados Principal: A Lista Encadeada
-[cite_start]Abandonamos a segurança do vetor estático para abraçar a liberdade (e o perigo) da *lista simplesmente encadeada*. [cite: 3] É uma corrente de nós (Node), onde cada um bravamente aponta para o próximo, esperando não apontar para NULL cedo demais. Essa escolha nos deu poderes ilimitados de crescimento, mas com grandes poderes vêm grandes responsabilidades de gerenciamento de memória.
+[_start]Abandonamos a segurança do vetor estático para abraçar a liberdade (e o perigo) da *lista simplesmente encadeada*. É uma corrente de nós (Node), onde cada um bravamente aponta para o próximo, esperando não apontar para NULL cedo demais. Essa escolha nos deu poderes ilimitados de crescimento, mas com grandes poderes vêm grandes responsabilidades de gerenciamento de memória.
 
 ### 2. Gerenciamento de Memória: A Arte do malloc e free
 A arte de pedir memória emprestada ao sistema com malloc e, mais importante, devolvê-la com free para não enfurecer o sistema operacional. Cada malloc para um novo nó de paciente tem seu free correspondente na função de remoção ou na liberação final da lista. Ignorar isso é o caminho para o lado sombrio dos memory leaks, e nós escolhemos o caminho da luz.
@@ -59,7 +59,7 @@ A arte de pedir memória emprestada ao sistema com malloc e, mais importante, de
 Para que o esforço de cadastrar "Cristiano Ronaldo" como paciente não seja perdido toda vez que o programa fecha, o sistema agora salva todas as alterações. Ao sair, o estado atual da lista em memória é heroicamente gravado de volta no arquivo bd_paciente.csv.
 
 ### 4. Fluxo de Atualização e Remoção: "Pense Duas Vezes"
-Implementamos um fluxo de trabalho seguro. [cite_start]Primeiro, você usa a consulta para achar a vítima... digo, o paciente. [cite: 34, 39] Depois, informa o ID para o ato final. [cite_start]Para garantir que não haja "cliques errados", o sistema ainda pergunta "Tem certeza?" antes de uma remoção. [cite: 40] [cite_start]Na atualização, adicionamos a conveniência de digitar - para não ter que redigitar todos os campos. [cite: 36]
+Implementamos um fluxo de trabalho seguro. Primeiro, você usa a consulta para achar a vítima... digo, o paciente. Depois, informa o ID para o ato final. Para garantir que não haja "cliques errados", o sistema ainda pergunta "Tem certeza?" antes de uma remoção. Na atualização, adicionamos a conveniência de digitar - para não ter que redigitar todos os campos.
 
 ### 5. Modularização e o TAD Opaco
 Seguindo o sábio conselho do nosso professor, separamos o Paciente em seu próprio módulo. O TAD BDPaciente esconde sua complexa alma de lista encadeada do main.c, que só conhece as funções da sua interface pública. É como conversar com um caixa de banco: você não precisa saber como o dinheiro é guardado lá dentro, só precisa saber como depositar e sacar.
