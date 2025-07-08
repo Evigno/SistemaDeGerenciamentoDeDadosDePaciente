@@ -20,14 +20,15 @@ void limpar_buffer_entrada() {
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
+// Aloca a estrutura principal do banco de dados
 BDPaciente* criar_bdpaciente() {
     BDPaciente* bd = (BDPaciente*)malloc(sizeof(BDPaciente));
-    if (bd != NULL) {
+    if (bd != NULL)
         bd->head = NULL;
-    }
     return bd;
 }
 
+// Libera toda a memória alocada para a lista
 void liberar_bdpaciente(BDPaciente* bd) {
     if (bd == NULL) return;
     Node* current = bd->head;
@@ -40,14 +41,17 @@ void liberar_bdpaciente(BDPaciente* bd) {
 }
 
 static void inserir_node_no_final(BDPaciente* bd, Paciente p) {
+    // Alocação de memória
     Node* newNode = (Node*)malloc(sizeof(Node));
     if (newNode == NULL) return;
     newNode->data = p;
     newNode->next = NULL;
 
-    if (bd->head == NULL) {
+    // Caso a lista esteja vazia
+    if (bd->head == NULL) 
         bd->head = newNode;
-    } else {
+    else {
+    // Caso não, insere ao final
         Node* current = bd->head;
         while (current->next != NULL) {
             current = current->next;
@@ -56,6 +60,7 @@ static void inserir_node_no_final(BDPaciente* bd, Paciente p) {
     }
 }
 
+// Carrega os dados do arquivo .csv para a memória (lista encadeada)
 int carregar_bd_do_csv(BDPaciente* bd, const char* nome_arquivo) {
     FILE* arquivo = fopen(nome_arquivo, "r");
     if (arquivo == NULL) {
@@ -64,7 +69,7 @@ int carregar_bd_do_csv(BDPaciente* bd, const char* nome_arquivo) {
     }
 
     char linha[256];
-    fgets(linha, sizeof(linha), arquivo);
+    fgets(linha, sizeof(linha), arquivo); // Pula a linha do cabeçalho
 
     while (fgets(linha, sizeof(linha), arquivo) != NULL) {
         Paciente p;
@@ -76,6 +81,7 @@ int carregar_bd_do_csv(BDPaciente* bd, const char* nome_arquivo) {
     return 0;
 }
 
+// Salva os dados da memória (lista encadeada) de volta para o arquivo .csv
 int salvar_bd_para_csv(const BDPaciente* bd, const char* nome_arquivo) {
     FILE* arquivo = fopen(nome_arquivo, "w");
     if (arquivo == NULL) {
@@ -83,7 +89,9 @@ int salvar_bd_para_csv(const BDPaciente* bd, const char* nome_arquivo) {
         return -1;
     }
 
-    fprintf(arquivo, "ID,CPF,Nome,Idade,Data_Cadastro\n");
+    fprintf(arquivo, "ID,CPF,Nome,Idade,Data_Cadastro\n"); // Escreve o cabeçalho
+    
+    // Percorre a lista e escreve cada paciente no arquivo
     Node* current = bd->head;
     while (current != NULL) {
         fprintf(arquivo, "%d,%s,%s,%d,%s\n",
@@ -96,21 +104,23 @@ int salvar_bd_para_csv(const BDPaciente* bd, const char* nome_arquivo) {
     return 0;
 }
 
+// Função p add a formatação (pontos e hífen) ao CPF
 static void formatar_cpf(const char* cpf_sem_formatacao, char* cpf_formatado) {
     if (strlen(cpf_sem_formatacao) == 11) {
         sprintf(cpf_formatado, "%.3s.%.3s.%.3s-%.2s",
                 cpf_sem_formatacao, cpf_sem_formatacao + 3,
                 cpf_sem_formatacao + 6, cpf_sem_formatacao + 9);
-    } else {
+    } else
         strcpy(cpf_formatado, cpf_sem_formatacao);
-    }
 }
 
+// Função p a funcionalidade de Inserir Paciente
 void inserir_paciente(BDPaciente* bd) {
     Paciente p;
     char cpf_temp[20], nome_temp[MAX_NOME], data_temp[MAX_DATA];
     int idade_temp;
     
+    // Coleta dos dados do usuário
     printf("\n[Sistema] Inserir novo paciente:\n");
     printf("Digite o CPF (apenas digitos): ");
     fgets(cpf_temp, sizeof(cpf_temp), stdin);
@@ -128,11 +138,13 @@ void inserir_paciente(BDPaciente* bd) {
     fgets(data_temp, sizeof(data_temp), stdin);
     data_temp[strcspn(data_temp, "\n")] = 0;
 
+    // Teste simples dos dados de entrada
     if (strlen(cpf_temp) != 11 || strlen(nome_temp) == 0 || strlen(data_temp) == 0) {
         printf("Erro: Dados invalidos. CPF deve ter 11 digitos e outros campos nao podem ser vazios.\n");
         return;
     }
 
+    // Lógica para gerar um novo ID único
     int max_id = 0;
     Node* current = bd->head;
     while (current != NULL) {
@@ -140,11 +152,14 @@ void inserir_paciente(BDPaciente* bd) {
         current = current->next;
     }
     p.id = max_id + 1;
+    
+    // Preenche a struct Paciente
     p.idade = idade_temp;
     formatar_cpf(cpf_temp, p.cpf);
     strcpy(p.nome, nome_temp);
     strcpy(p.data_cadastro, data_temp);
 
+    // confirmação com o usuário
     printf("\n[Sistema] Confirma a insercao do registro abaixo? (S/N)\n");
     printf("ID: %d\nCPF: %s\nNome: %s\nIdade: %d\nData: %s\n> ", p.id, p.cpf, p.nome, p.idade, p.data_cadastro);
     
@@ -160,6 +175,7 @@ void inserir_paciente(BDPaciente* bd) {
     }
 }
 
+// Função para a funcionalidade de Consultar Paciente
 void consultar_paciente(const BDPaciente* bd) {
     int opcao;
     char termo[MAX_NOME];
@@ -185,8 +201,10 @@ void consultar_paciente(const BDPaciente* bd) {
 
     int encontrados = 0;
     Node* current = bd->head;
+
     while (current != NULL) {
         int corresponde = 0;
+
         if (opcao == 1 && strncmp(current->data.nome, termo, strlen(termo)) == 0) {
             corresponde = 1;
         } else if (opcao == 2 && strncmp(current->data.cpf, termo, strlen(termo)) == 0) {
@@ -228,16 +246,17 @@ void remover_paciente(BDPaciente* bd) {
     limpar_buffer_entrada();
 
     if (toupper(confirm) == 'S') {
+        // O nó a ser removido é o 1º
         if (prev == NULL) {
             bd->head = current->next;
         } else {
+        // O nó tá no meio ou no fim da lista
             prev->next = current->next;
         }
-        free(current);
+        free(current); // Libera a memória do nó removido
         printf("Registro removido com sucesso.\n");
-    } else {
+    } else
         printf("Remocao cancelada.\n");
-    }
 }
 
 void atualizar_paciente(BDPaciente* bd) {
@@ -246,6 +265,7 @@ void atualizar_paciente(BDPaciente* bd) {
     scanf("%d", &id_atualizar);
     limpar_buffer_entrada();
 
+    // Encontra o nó a ser atualizado
     Node *current = bd->head;
     while (current != NULL && current->data.id != id_atualizar) {
         current = current->next;
@@ -275,20 +295,21 @@ void atualizar_paciente(BDPaciente* bd) {
     fgets(data_temp, sizeof(data_temp), stdin);
     data_temp[strcspn(data_temp, "\n")] = 0;
     
+
     char confirm;
     printf("\nConfirma as alteracoes? (S/N)\n> ");
     scanf(" %c", &confirm);
     limpar_buffer_entrada();
 
     if (toupper(confirm) == 'S') {
+        // Chave: Usa 'strcmp' para verificar se o usuário digitou '-', decidindo se atualiza ou mantém o campo
         if (strcmp(cpf_temp, "-") != 0 && strlen(cpf_temp) == 11) formatar_cpf(cpf_temp, current->data.cpf);
         if (strcmp(nome_temp, "-") != 0) strcpy(current->data.nome, nome_temp);
         if (strcmp(idade_str, "-") != 0) current->data.idade = atoi(idade_str);
         if (strcmp(data_temp, "-") != 0) strcpy(current->data.data_cadastro, data_temp);
         printf("Registro atualizado com sucesso.\n");
-    } else {
+    } else
         printf("Atualizacao cancelada.\n");
-    }
 }
 
 void imprimir_lista_pacientes(const BDPaciente* bd) {
@@ -309,6 +330,7 @@ void imprimir_lista_pacientes(const BDPaciente* bd) {
                current->data.idade, current->data.data_cadastro);
         count++;
         
+        // Paginação p pausar a exibição
         if (count % RECORDS_PER_PAGE == 0 && current->next != NULL) {
             printf("\nPressione Enter para continuar ou Q e Enter para sair...");
             char ch = getchar();
@@ -316,6 +338,7 @@ void imprimir_lista_pacientes(const BDPaciente* bd) {
                 if(ch != '\n') limpar_buffer_entrada();
                 break;
             }
+            // Não há repetição do cabeçalho aqui -> correção do erro do 1º trabalho
         }
         current = current->next;
     }
